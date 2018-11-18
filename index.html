@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Reversible Writer</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/fontawesome-webfonts.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/jquery.slim.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/lodash.js"></script>
+    <script type="text/javascript" src="js/localforage.min.js"></script>
+    <script type="text/javascript" src="js/moment.js"></script>
+  </head>
+  <body>
+    <div class="text-center">
+      <h1 class="text-small text-muted my-3 title-content">Reversible Writer</h1>
+      <div class="container">
+        <div class="row text-left">
+          <div class="col-6 px-1">
+            <div class="card">
+              <div class="card-body" style="height: 80vh">
+                <textarea class="form-control h-100 p-0" id="text-input"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 px-1">
+            <div class="card text-white bg-dark">
+              <div class="card-body" style="height: 80vh">
+                <span id="text-display"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      const defaultSettings = {
+        text: ""
+      };
+
+      const title = "Writing Reverser";
+
+      var settings = {};
+
+      function reverse(str) {
+        var ret = "";
+        var lines = _.reverse(str.split('\n'));
+        for (var i = 0; i != lines.length; ++i) {
+          var line = lines[i];
+          ret += _.reverse(line.split(' ')).join(' ') + '<br />';
+        }
+        return ret;
+      }
+
+      function update() {
+        localforage.setItem('settings', settings).then(() => {
+          $('#text-input').val(settings.text);
+
+          $('#text-display').html(reverse(settings.text));
+        });
+      }
+
+      function setup(set) {
+        settings = {
+          text: set.text || defaultSettings.text
+        };
+
+        update();
+
+        $(".title-content").html(title);
+        document.title = title;
+
+        //setup listeners
+        $('#text-input').on('keyup', (evt) => {
+          setTimeout(function () {
+            settings.text = $('#text-input').val();
+            update();
+          }, 0.01);
+        });
+      }
+
+      $(document).ready(() => {
+        localforage.getItem('settings').then(settings => {
+          setup(settings || defaultSettings);
+        });
+      });
+    </script>
+  </body>
+</html>
